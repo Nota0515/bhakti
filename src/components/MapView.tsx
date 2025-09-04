@@ -29,9 +29,10 @@ interface Mandal {
 
 interface MapViewProps {
   onShowToast?: (message: string) => void;
+  onBack?: () => void;
 }
 
-export const MapView: React.FC<MapViewProps> = ({ onShowToast }) => {
+export const MapView: React.FC<MapViewProps> = ({ onShowToast, onBack }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const googleMapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
@@ -172,15 +173,26 @@ export const MapView: React.FC<MapViewProps> = ({ onShowToast }) => {
         </div>
       )}
 
-      {/* Search Bar */}
+      {/* Navigation and Search Bar */}
       <div className="absolute top-4 left-4 right-4 z-10">
         <div className="glass rounded-2xl p-4 shadow-divine">
+          <div className="flex items-center gap-3 mb-3">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={onBack} 
+              className="text-primary hover:text-primary-foreground hover:bg-primary/20"
+            >
+              ← Back to Home
+            </Button>
+            <div className="text-sm font-semibold text-primary">Discover Mandals</div>
+          </div>
           <div className="flex items-center gap-3">
             <MapPinIcon className="text-primary" size={20} />
             <input 
               type="text" 
               placeholder="Search mandals by name or location..."
-              className="flex-1 bg-transparent outline-none text-foreground placeholder-muted-foreground"
+              className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground font-medium"
             />
             <Button variant="divine" size="sm">Search</Button>
           </div>

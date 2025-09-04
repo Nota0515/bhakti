@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Landing } from '@/components/Landing';
 import { MapView } from '@/components/MapView';
+import { MandalRegistrationForm } from '@/components/MandalRegistrationForm';
 import { SuccessToast } from '@/components/SuccessToast';
 
 const Index = () => {
@@ -23,28 +24,29 @@ const Index = () => {
     setShowSuccessToast(true);
   };
 
+  const handleBackToHome = () => {
+    setCurrentView('landing');
+    setUserRole(null);
+  };
+
+  const handleRegistrationComplete = () => {
+    showToast("Mandal registration submitted successfully! We'll review and contact you soon. 🙏");
+    setCurrentView('landing');
+    setUserRole(null);
+  };
+
   const renderCurrentView = () => {
     switch (currentView) {
       case 'landing':
         return <Landing onSelectRole={handleRoleSelection} />;
       case 'map':
-        return <MapView onShowToast={showToast} />;
+        return <MapView onShowToast={showToast} onBack={handleBackToHome} />;
       case 'registration':
         return (
-          <div className="min-h-screen flex items-center justify-center bg-background">
-            <div className="text-center space-y-4">
-              <h1 className="text-4xl font-bold bg-gradient-divine bg-clip-text text-transparent">
-                Mandal Registration
-              </h1>
-              <p className="text-xl text-muted-foreground">Coming Soon...</p>
-              <button 
-                onClick={() => setCurrentView('landing')}
-                className="text-primary hover:underline"
-              >
-                ← Back to Home
-              </button>
-            </div>
-          </div>
+          <MandalRegistrationForm 
+            onBack={handleBackToHome}
+            onRegistrationComplete={handleRegistrationComplete}
+          />
         );
       default:
         return <Landing onSelectRole={handleRoleSelection} />;
