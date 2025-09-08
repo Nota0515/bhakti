@@ -1,6 +1,6 @@
 import { MandalRegistrationForm } from '@/components/MandalRegistrationForm';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 const RegistrationPage = () => {
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ const RegistrationPage = () => {
   const handleRegistrationComplete = () => {
     toast({
       title: "Registration Submitted",
-      description: "We'll review and contact you soon. 🙏",
+      description: "We\'ll review and contact you soon. 🙏",
     });
     navigate('/');
   };

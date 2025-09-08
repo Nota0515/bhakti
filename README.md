@@ -10,7 +10,7 @@ Bhakti-United is a devotional festival experience that allows users to discover 
 
 ### Google Maps Setup
 - **Provider**: Google Maps JavaScript API
-- **API Key**: `AIzaSyAvOlU6uEZycjphIYj1TMIYO1t_k6pTGj4`
+- **API Key**: `YOUR_GOOGLE_MAPS_API_KEY`
 - **Environment Variable**: `MAP_API_KEY` (recommended for production)
 
 ### Implementation Details
@@ -312,7 +312,7 @@ npm run dev
 ### Environment Variables
 ```bash
 # .env.local
-VITE_MAP_API_KEY=AIzaSyAvOlU6uEZycjphIYj1TMIYO1t_k6pTGj4
+VITE_MAP_API_KEY=YOUR_GOOGLE_MAPS_API_KEY
 VITE_APP_ENV=development
 ```
 

@@ -10,7 +10,7 @@ import { MapPin as MapPinIcon, Star, Phone, Navigation, Menu } from 'lucide-reac
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Google Maps API Key - In production, store this as environment variable
-const GOOGLE_MAPS_API_KEY = "AIzaSyAvOlU6uEZycjphIYj1TMIYO1t_k6pTGj4";
+const GOOGLE_MAPS_API_KEY = "YOUR_GOOGLE_MAPS_API_KEY";
 
 interface Mandal {
   id: string;
@@ -29,11 +29,10 @@ interface Mandal {
 }
 
 interface MapViewProps {
-  onShowToast?: (message: string) => void;
   onBack?: () => void;
 }
 
-export const MapView: React.FC<MapViewProps> = ({ onShowToast, onBack }) => {
+export const MapView: React.FC<MapViewProps> = ({ onBack }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const googleMapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
@@ -47,7 +46,7 @@ export const MapView: React.FC<MapViewProps> = ({ onShowToast, onBack }) => {
       if (!mapRef.current) return;
 
       const loader = new Loader({
-        apiKey: GOOGLE_MAPS_API_KEY,
+        apiKey: "AIzaSyAvOlU6uEZycjphIYj1TMIYO1t_k6pTGj4",
         version: "weekly",
         libraries: ["places", "geometry"]
       });
@@ -338,7 +337,6 @@ export const MapView: React.FC<MapViewProps> = ({ onShowToast, onBack }) => {
           }}
           onPaymentComplete={() => {
             setShowPrasadModal(false);
-            onShowToast?.("Prasad order completed! May Ganpati Bappa bless you. 🙏");
           }}
         />
       )}
