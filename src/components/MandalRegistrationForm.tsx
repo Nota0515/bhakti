@@ -29,6 +29,7 @@ interface MandalRegistrationFormProps {
 
 interface FormData {
   name: string;
+  email: string;
   establishedYear: string;
   location: string;
   address: string;
@@ -50,6 +51,7 @@ export const MandalRegistrationForm: React.FC<MandalRegistrationFormProps> = ({
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     name: '',
+    email: '',
     establishedYear: '',
     location: '',
     address: '',
@@ -105,7 +107,7 @@ export const MandalRegistrationForm: React.FC<MandalRegistrationFormProps> = ({
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            to: formData.contactPhone.includes('@') ? formData.contactPhone : 'admin@ganpatimandalapp.com',
+            to: formData.email || 'admin@ganpatimandalapp.com',
             subject: `Thank you for registering ${formData.name} with Ganpati Mandal App`,
             text: `Dear ${formData.contactName || 'Valued Mandal Member'},
 
@@ -192,6 +194,18 @@ The Ganpati Mandal App Team`,
                   placeholder="Enter your mandal's full name"
                   value={formData.name}
                   onChange={(e) => updateFormData('name', e.target.value)}
+                  className="glass border-primary/20"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-foreground font-medium">Mandal Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="mandal@example.com"
+                  value={formData.email}
+                  onChange={(e) => updateFormData('email', e.target.value)}
                   className="glass border-primary/20"
                 />
               </div>
