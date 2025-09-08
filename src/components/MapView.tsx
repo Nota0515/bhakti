@@ -282,7 +282,7 @@ export const MapView: React.FC<MapViewProps> = ({ onBack }) => {
               <Button 
                 variant="vote" 
                 size="sm" 
-                className="flex-1"
+                className="flex-1 bg-black hover:bg-black"
                 onClick={() => handleVote(selectedMandal.id)}
               >
                 <Star className="w-4 h-4" />
