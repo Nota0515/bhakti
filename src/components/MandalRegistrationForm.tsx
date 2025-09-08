@@ -75,9 +75,79 @@ export const MandalRegistrationForm: React.FC<MandalRegistrationFormProps> = ({
     }));
   };
 
+  // Validation functions
+  const validateStep = (step: number): boolean => {
+    switch (step) {
+      case 1:
+        if (!formData.name.trim()) {
+          alert('Please enter mandal name');
+          return false;
+        }
+        if (!formData.email) {
+          alert('Please enter email address');
+          return false;
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+          alert('Please enter a valid email address');
+          return false;
+        }
+        if (!formData.establishedYear) {
+          alert('Please enter established year');
+          return false;
+        }
+        const currentYear = new Date().getFullYear();
+        if (isNaN(Number(formData.establishedYear)) || 
+            Number(formData.establishedYear) < 1800 || 
+            Number(formData.establishedYear) > currentYear) {
+          alert(`Please enter a valid year between 1800 and ${currentYear}`);
+          return false;
+        }
+        if (!formData.contactName.trim()) {
+          alert('Please enter contact person name');
+          return false;
+        }
+        if (!formData.contactPhone) {
+          alert('Please enter contact number');
+          return false;
+        }
+        if (!/^[0-9]{10}$/.test(formData.contactPhone)) {
+          alert('Please enter a valid 10-digit phone number');
+          return false;
+        }
+        return true;
+
+      case 2:
+        if (!formData.location.trim()) {
+          alert('Please enter location');
+          return false;
+        }
+        if (!formData.address.trim()) {
+          alert('Please enter address');
+          return false;
+        }
+        return true;
+
+      case 3:
+        // No validation needed for optional fields in step 3
+        return true;
+
+      case 4:
+        if (!formData.upiId.trim()) {
+          alert('Please enter UPI ID');
+          return false;
+        }
+        return true;
+
+      default:
+        return true;
+    }
+  };
+
   const handleNext = () => {
     if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
+      if (validateStep(currentStep)) {
+        setCurrentStep(currentStep + 1);
+      }
     }
   };
 
@@ -204,6 +274,7 @@ The Ganpati Mandal App Team`,
                   id="email"
                   type="email"
                   placeholder="mandal@example.com"
+                  pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
                   value={formData.email}
                   onChange={(e) => updateFormData('email', e.target.value)}
                   className="glass border-primary/20"
@@ -217,6 +288,8 @@ The Ganpati Mandal App Team`,
                     id="establishedYear"
                     type="number"
                     placeholder="1950"
+                    min="1800"
+                    max={new Date().getFullYear()}
                     value={formData.establishedYear}
                     onChange={(e) => updateFormData('establishedYear', e.target.value)}
                     className="glass border-primary/20"
@@ -228,9 +301,14 @@ The Ganpati Mandal App Team`,
                   <Input
                     id="contactPhone"
                     type="tel"
-                    placeholder="+91 98765 43210"
+                    placeholder="9876543210"
+                    pattern="[0-9]{10}"
+                    maxLength={10}
                     value={formData.contactPhone}
-                    onChange={(e) => updateFormData('contactPhone', e.target.value)}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      updateFormData('contactPhone', value);
+                    }}
                     className="glass border-primary/20"
                   />
                 </div>
