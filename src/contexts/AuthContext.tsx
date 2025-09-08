@@ -7,7 +7,8 @@ type User = {
 
 type AuthContextType = {
   user: User;
-  login: (userData: { email: string; name: string }) => void;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string, name: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
 };
@@ -53,14 +54,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
-  const login = (userData: { email: string; name: string }) => {
-    const userToStore = { email: userData.email, name: userData.name };
-    localStorage.setItem('currentUser', JSON.stringify(userToStore));
-    // Force state update
-    setUser(userToStore);
+  // Login function
+  const login = async (email: string, password: string) => {
+    // In a real app, you would validate the credentials with your backend
+    // For demo purposes, we'll just create a user object
+    const userData = { email, name: email.split('@')[0] };
+    setUser(userData);
     setIsAuthenticated(true);
-    // Force a re-render of all components using this context
-    window.dispatchEvent(new Event('storage'));
+    localStorage.setItem('currentUser', JSON.stringify(userData));
+  };
+
+  // Signup function
+  const signup = async (email: string, password: string, name: string) => {
+    // In a real app, you would create the user in your backend
+    // For demo purposes, we'll just create a user object
+    const userData = { email, name };
+    
+    // Store the user in localStorage
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    const userExists = users.some((user: any) => user.email === email);
+    
+    if (userExists) {
+      throw new Error('User already exists');
+    }
+    
+    users.push({ email, password, name });
+    localStorage.setItem('users', JSON.stringify(users));
+    
+    // Log the user in
+    setUser(userData);
+    setIsAuthenticated(true);
+    localStorage.setItem('currentUser', JSON.stringify(userData));
   };
 
   const logout = () => {
@@ -72,7 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, isAuthenticated }}>
       {children}
     </AuthContext.Provider>
   );

@@ -20,17 +20,12 @@ export const createServer = () => {
         return res.status(400).json({ message: 'Missing required fields' });
       }
 
-      // Create a test account (use real credentials in production)
-      const testAccount = await nodemailer.createTestAccount();
-
-      // Create a transporter object using the default SMTP transport
+      // Create a transporter object using Gmail SMTP
       const transporter = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
-        port: 587,
-        secure: false, // true for 465, false for other ports
+        service: 'gmail',
         auth: {
-          user: testAccount.user,
-          pass: testAccount.pass,
+          user: process.env.GMAIL_EMAIL,
+          pass: process.env.GMAIL_APP_PASSWORD,
         },
       });
 
