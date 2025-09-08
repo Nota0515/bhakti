@@ -120,7 +120,15 @@ export default {
 					'0%': { transform: 'translateY(-100vh) scale(0.3)', opacity: '0' },
 					'60%': { transform: 'translateY(10px) scale(1.1)', opacity: '0.8' },
 					'100%': { transform: 'translateY(0) scale(1)', opacity: '1' }
-				}
+				},
+        'spin-slow': {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(360deg)' },
+        },
+        'zoom-in-out': {
+          '0%, 100%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(1.05)' },
+        },
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
@@ -128,7 +136,9 @@ export default {
 				'float': 'float 6s ease-in-out infinite',
 				'glow-pulse': 'glow-pulse 2s ease-in-out infinite alternate',
 				'diya-flicker': 'diya-flicker 2s ease-in-out infinite',
-				'pin-drop': 'pin-drop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)'
+				'pin-drop': 'pin-drop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        'spin-slow': 'spin-slow 10s linear infinite',
+        'zoom-in-out': 'zoom-in-out 3s ease-in-out infinite',
 			}
 		}
 	},

@@ -6,7 +6,8 @@ import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { PrasadOrderModal } from './PrasadOrderModal';
-import { MapPin as MapPinIcon, Star, Phone, Navigation } from 'lucide-react';
+import { MapPin as MapPinIcon, Star, Phone, Navigation, Menu } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Google Maps API Key - In production, store this as environment variable
 const GOOGLE_MAPS_API_KEY = "AIzaSyAvOlU6uEZycjphIYj1TMIYO1t_k6pTGj4";
@@ -39,6 +40,7 @@ export const MapView: React.FC<MapViewProps> = ({ onShowToast, onBack }) => {
   const [selectedMandal, setSelectedMandal] = useState<Mandal | null>(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [showPrasadModal, setShowPrasadModal] = useState(false);
+  const [isNavbarOpen, setIsNavbarOpen] = useState(false);
 
   useEffect(() => {
     const initMap = async () => {
@@ -165,7 +167,7 @@ export const MapView: React.FC<MapViewProps> = ({ onShowToast, onBack }) => {
 
       {/* Loading Overlay */}
       {!isMapLoaded && (
-        <div className="absolute inset-0 glass flex items-center justify-center">
+        <div className="absolute inset-0 glass flex items-center justify-center z-50">
           <div className="text-center space-y-4">
             <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
             <p className="text-primary font-medium">Loading Sacred Map...</p>
@@ -173,31 +175,52 @@ export const MapView: React.FC<MapViewProps> = ({ onShowToast, onBack }) => {
         </div>
       )}
 
-      {/* Navigation and Search Bar */}
-      <div className="absolute top-4 left-4 right-4 z-10">
-        <div className="glass rounded-2xl p-4 shadow-divine">
-          <div className="flex items-center gap-3 mb-3">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={onBack} 
-              className="text-primary hover:text-primary-foreground hover:bg-primary/20"
-            >
-              ← Back to Home
-            </Button>
-            <div className="text-sm font-semibold text-primary">Discover Mandals</div>
-          </div>
-          <div className="flex items-center gap-3">
-            <MapPinIcon className="text-primary" size={20} />
-            <input 
-              type="text" 
-              placeholder="Search mandals by name or location..."
-              className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground font-medium"
-            />
-            <Button variant="divine" size="sm">Search</Button>
-          </div>
-        </div>
+      {/* Navbar Toggle Button */}
+      <div className="absolute top-4 left-4 z-40">
+        <Button
+          variant="holy"
+          size="icon"
+          onClick={() => setIsNavbarOpen(!isNavbarOpen)}
+          className="shadow-divine"
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
       </div>
+
+      {/* Navigation and Search Bar */}
+      <AnimatePresence>
+        {isNavbarOpen && (
+          <motion.div
+            className="absolute top-4 left-16 right-4 z-30"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            <div className="glass rounded-2xl p-4 shadow-divine">
+              <div className="flex items-center gap-3 mb-3">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={onBack} 
+                  className="text-primary hover:text-primary-foreground hover:bg-primary/20"
+                >
+                  ← Back to Home
+                </Button>
+                <div className="text-sm font-semibold text-primary">Discover Mandals</div>
+              </div>
+              <div className="flex items-center gap-3">
+                <MapPinIcon className="text-primary" size={20} />
+                <input 
+                  type="text" 
+                  placeholder="Search mandals by name or location..."
+                  className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground font-medium"
+                />
+                <Button variant="divine" size="sm">Search</Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Mandal Detail Panel */}
       {selectedMandal && (
