@@ -87,10 +87,81 @@ export const MandalRegistrationForm: React.FC<MandalRegistrationFormProps> = ({
     }
   };
 
-  const handleSubmit = () => {
-    // Mock registration completion
-    console.log('Mandal registration:', formData);
-    onRegistrationComplete();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    setIsSubmitting(true);
+    try {
+      // Save registration data to local storage (or your backend)
+      const mandals = JSON.parse(localStorage.getItem('mandals') || '[]');
+      localStorage.setItem('mandals', JSON.stringify([...mandals, formData]));
+      
+      // Send email notification
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: formData.contactPhone.includes('@') ? formData.contactPhone : 'admin@ganpatimandalapp.com', // Use contact email if it's an email, otherwise send to admin
+          subject: `Thank you for registering ${formData.name} with Ganpati Mandal App`,
+          text: `Dear ${formData.contactName || 'Valued Mandal Member'},
+
+Thank you for registering ${formData.name} with Ganpati Mandal App! We're thrilled to have you on board.
+
+Here are your registration details:
+- Mandal Name: ${formData.name}
+- Location: ${formData.location}
+- Contact: ${formData.contactName} (${formData.contactPhone})
+
+Our team will review your registration and get in touch with you shortly. In the meantime, feel free to explore our platform and let us know if you have any questions.
+
+Best regards,
+The Ganpati Mandal App Team`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+              <div style="text-align: center; margin-bottom: 20px;">
+                <h1 style="color: #4CAF50;">Welcome to Ganpati Mandal App!</h1>
+                <p>Thank you for registering your mandal with us.</p>
+              </div>
+              
+              <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+                <h2 style="color: #333; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px;">Registration Details</h2>
+                <p><strong>Mandal Name:</strong> ${formData.name}</p>
+                <p><strong>Established Year:</strong> ${formData.establishedYear}</p>
+                <p><strong>Location:</strong> ${formData.location}</p>
+                <p><strong>Contact Person:</strong> ${formData.contactName}</p>
+                <p><strong>Contact Number:</strong> ${formData.contactPhone}</p>
+                ${formData.address ? `<p><strong>Address:</strong> ${formData.address}</p>` : ''}
+                ${formData.description ? `<p><strong>Description:</strong> ${formData.description}</p>` : ''}
+              </div>
+              
+              <div style="margin-top: 20px; text-align: center; color: #666; font-size: 14px;">
+                <p>Our team will review your registration and get in touch with you shortly.</p>
+                <p>If you have any questions, please don't hesitate to contact us.</p>
+                <p style="margin-top: 20px;">Best regards,<br>The Ganpati Mandal App Team</p>
+              </div>
+            </div>
+          `
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        console.error('Failed to send email:', result);
+        // Don't fail the registration if email fails, just log it
+      } else {
+        console.log('Email sent:', result);
+      }
+      
+      onRegistrationComplete();
+    } catch (error) {
+      console.error('Error during registration:', error);
+      // You might want to show an error toast here
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderStep = () => {
