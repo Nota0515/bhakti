@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Loader } from '@googlemaps/js-api-loader';
+import { useAuth } from '@/contexts/AuthContext';
 import mandalsData from '@/data/seed-mandals.json';
 import { MapPin } from './MapPin';
 import { Card } from './ui/card';
@@ -8,7 +9,6 @@ import { Badge } from './ui/badge';
 import { PrasadOrderModal } from './PrasadOrderModal';
 import { MapPin as MapPinIcon, Star, Phone, Navigation, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/lib/supabase';
 
@@ -40,10 +40,12 @@ export const MapView: React.FC<MapViewProps> = ({ onBack }) => {
   const googleMapRef = useRef<google.maps.Map | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
   const [selectedMandal, setSelectedMandal] = useState<Mandal | null>(null);
+  const [showPrasadForm, setShowPrasadForm] = useState(false);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [showPrasadModal, setShowPrasadModal] = useState(false);
   const [isNavbarOpen, setIsNavbarOpen] = useState(false);
   const { user, profile, loading } = useAuth();
+  const isAuthenticated = !!user;
   const { toast } = useToast();
 
   useEffect(() => {
