@@ -8,9 +8,12 @@ import { Badge } from './ui/badge';
 import { PrasadOrderModal } from './PrasadOrderModal';
 import { MapPin as MapPinIcon, Star, Phone, Navigation, Menu } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
 
 // Google Maps API Key - In production, store this as environment variable
-const GOOGLE_MAPS_API_KEY = "YOUR_GOOGLE_MAPS_API_KEY";
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyAvOlU6uEZycjphIYj1TMIYO1t_k6pTGj4";
 
 interface Mandal {
   id: string;
@@ -40,6 +43,8 @@ export const MapView: React.FC<MapViewProps> = ({ onBack }) => {
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [showPrasadModal, setShowPrasadModal] = useState(false);
   const [isNavbarOpen, setIsNavbarOpen] = useState(false);
+  const { user, profile, loading } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
     const initMap = async () => {
@@ -154,9 +159,84 @@ export const MapView: React.FC<MapViewProps> = ({ onBack }) => {
     };
   }, []);
 
-  const handleVote = (mandalId: string) => {
-    // Mock voting implementation
-    console.log('Voting for mandal:', mandalId);
+  const handlePrasadOrderSubmit = async (formData: any) => {
+    if (!selectedMandal || !isAuthenticated) return;
+
+    try {
+      // Here you would typically send the order to your backend
+      const orderData = {
+        user_id: profile?.id,
+        mandal_id: selectedMandal.id,
+        mandal_name: selectedMandal.name,
+        contact_phone: formData.phone,
+        delivery_address: formData.deliveryAddress,
+        special_instructions: formData.notes,
+        status: 'pending',
+        created_at: new Date().toISOString(),
+      };
+
+      // In a real app, you would save this to your orders table
+      console.log('Order submitted:', orderData);
+      
+      // Mark prasad as ordered in the user's profile
+      if (profile) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ 
+            has_ordered_prasad: true,
+            phone: formData.phone,
+            address: formData.deliveryAddress 
+          })
+          .eq('id', profile.id);
+
+        if (error) throw error;
+      }
+
+      setShowPrasadModal(false);
+      
+      toast({
+        title: 'Prasad Ordered!',
+        description: 'Your prasad order has been placed successfully.',
+      });
+
+      // Refresh the page to update the UI
+      window.location.reload();
+      
+    } catch (error) {
+      console.error('Error placing order:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to place order. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleOrderPrasad = async (mandal: Mandal) => {
+    if (loading) {
+      // Still loading auth state, do nothing
+      return;
+    }
+    
+    if (!user) {
+      toast({
+        title: 'Authentication Required',
+        description: 'Please log in to order prasad.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (profile?.has_ordered_prasad) {
+      toast({
+        title: 'Order Already Placed',
+        description: 'You have already ordered prasad. Check your profile for details.',
+      });
+      return;
+    }
+
+    setSelectedMandal(mandal);
+    setShowPrasadModal(true);
   };
 
   return (
@@ -167,11 +247,11 @@ export const MapView: React.FC<MapViewProps> = ({ onBack }) => {
       {/* Loading Overlay */}
       {!isMapLoaded && (
         <div className="absolute inset-0 glass flex items-center justify-center z-50">
-          <div className="text-center space-y-4">
-            <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-            <p className="text-primary font-medium">Loading Sacred Map...</p>
-          </div>
+        <div className="text-center space-y-4">
+          <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+          <p className="text-primary font-medium">Loading Sacred Map...</p>
         </div>
+      </div>
       )}
 
       {/* Navbar Toggle Button */}
@@ -283,7 +363,7 @@ export const MapView: React.FC<MapViewProps> = ({ onBack }) => {
                 variant="vote" 
                 size="sm" 
                 className="flex-1 bg-black hover:bg-black"
-                onClick={() => handleVote(selectedMandal.id)}
+                onClick={() => handleOrderPrasad(selectedMandal)}
               >
                 <Star className="w-4 h-4" />
                 Vote
@@ -294,7 +374,7 @@ export const MapView: React.FC<MapViewProps> = ({ onBack }) => {
                   variant="prasad" 
                   size="sm" 
                   className="flex-1"
-                  onClick={() => setShowPrasadModal(true)}
+                  onClick={() => handleOrderPrasad(selectedMandal)}
                 >
                   Order Prasad
                 </Button>
@@ -328,16 +408,9 @@ export const MapView: React.FC<MapViewProps> = ({ onBack }) => {
         <PrasadOrderModal
           isOpen={showPrasadModal}
           onClose={() => setShowPrasadModal(false)}
-          mandal={{
-            id: selectedMandal.id,
-            name: selectedMandal.name,
-            location: selectedMandal.location,
-            upi_id: selectedMandal.upi_id,
-            delivery_available: selectedMandal.delivery_available
-          }}
-          onPaymentComplete={() => {
-            setShowPrasadModal(false);
-          }}
+          onSubmit={handlePrasadOrderSubmit}
+          mandal={selectedMandal}
+          userPhone={profile?.phone}
         />
       )}
     </div>

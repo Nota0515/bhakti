@@ -1,13 +1,28 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthForm } from "@/components/AuthForm";
+import { useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 
-export default function LoginPage() {
-  const location = useLocation();
+interface LoginPageProps {
+  isSignUp?: boolean;
+}
+
+export default function LoginPage({ isSignUp = false }: LoginPageProps) {
   const navigate = useNavigate();
-  const isSignUp = location.pathname === '/signup';
+  const location = useLocation();
+  const { user } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      const from = location.state?.from?.pathname || '/';
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, location]);
 
   const onSuccess = () => {
-    navigate('/'); // Redirect to home after successful login/signup
+    const from = location.state?.from?.pathname || '/';
+    navigate(from, { replace: true });
   };
 
   return (

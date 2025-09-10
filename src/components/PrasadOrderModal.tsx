@@ -32,7 +32,13 @@ interface Mandal {
 interface PrasadOrderModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSubmit: (formData: {
+    phone: string;
+    deliveryAddress: string;
+    notes: string;
+  }) => Promise<void>;
   mandal: Mandal;
+  userPhone?: string;
   onPaymentComplete?: () => void;
 }
 
@@ -61,12 +67,20 @@ export const PrasadOrderModal: React.FC<PrasadOrderModalProps> = ({
   isOpen, 
   onClose, 
   mandal,
+  userPhone,
+  onSubmit,
   onPaymentComplete 
 }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [includeDelivery, setIncludeDelivery] = useState(false);
   const [showUpiModal, setShowUpiModal] = useState(false);
   const [currentOrder, setCurrentOrder] = useState<any>(null);
+  const [formData, setFormData] = useState({
+    phone: userPhone || '',
+    deliveryAddress: '',
+    notes: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const deliveryFee = 200;
 
@@ -144,6 +158,31 @@ export const PrasadOrderModal: React.FC<PrasadOrderModalProps> = ({
     // Show success message
     if (onPaymentComplete) {
       onPaymentComplete();
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.phone || !formData.deliveryAddress) {
+      return;
+    }
+    
+    setIsSubmitting(true);
+    try {
+      await onSubmit({
+        phone: formData.phone,
+        deliveryAddress: formData.deliveryAddress,
+        notes: formData.notes
+      });
+      
+      if (onPaymentComplete) {
+        onPaymentComplete();
+      }
+      onClose();
+    } catch (error) {
+      console.error('Error submitting order:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 

@@ -18,7 +18,7 @@ export function AuthForm({ mode = 'login', onSuccess }: AuthFormProps) {
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { login, signup } = useAuth();
+  const { signIn, signUp } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,73 +26,42 @@ export function AuthForm({ mode = 'login', onSuccess }: AuthFormProps) {
     
     try {
       if (mode === 'signup') {
-        await signup(email, password, name);
+        // Sign up with email and password
+        await signUp(email, password, name);
         toast({
           title: 'Account created!',
-          description: 'Your account has been created successfully.',
+          description: 'You have been successfully signed in.',
         });
+        onSuccess();
       } else {
-        // For login, we only need email and password
-        await login(email, password);
+        // Log in with email and password
+        await signIn(email, password);
         toast({
           title: 'Welcome back!',
           description: 'You have been successfully logged in.',
         });
-      }
-      onSuccess();
-      if (mode === 'signup') {
-        // Check if user already exists
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        const userExists = users.some((user: any) => user.email === email);
-        
-        if (userExists) {
-          toast({
-            title: 'Error',
-            description: 'User already exists',
-            variant: 'destructive',
-          });
-          return;
-        }
-        
-        // Create new user
-        const newUser = { email, password, name };
-        localStorage.setItem('users', JSON.stringify([...users, newUser]));
-        
-        // Use the login function from auth context
-        await login(email, password);
-        
-        toast({
-          title: 'Success',
-          description: 'Account created and logged in successfully!',
-        });
-        
-      } else {
-        // Login logic
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        const user = users.find((u: any) => u.email === email && u.password === password);
-        
-        if (user) {
-          // Use the login function with email and password
-          await login(email, password);
-          
-          toast({
-            title: 'Success',
-            description: 'Logged in successfully!',
-          });
-        } else {
-          throw new Error('Invalid email or password');
-        }
-      }
-      
-      // Small delay to ensure state updates before navigation
-      setTimeout(() => {
         onSuccess();
-      }, 100);
-      
+      }
     } catch (error) {
+      console.error('Auth error:', error);
+      let errorMessage = 'An error occurred during authentication.';
+      
+      if (error instanceof Error) {
+        // Handle common Supabase auth errors
+        if (error.message.includes('Invalid login credentials')) {
+          errorMessage = 'Invalid email or password. Please try again.';
+        } else if (error.message.includes('User already registered')) {
+          errorMessage = 'An account with this email already exists. Please log in instead.';
+        } else if (error.message.includes('Password should be at least 6 characters')) {
+          errorMessage = 'Password must be at least 6 characters long.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'An error occurred',
+        description: errorMessage,
         variant: 'destructive',
       });
     } finally {

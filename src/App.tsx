@@ -1,72 +1,96 @@
-import { useState, useEffect } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import MapPage from "./pages/MapPage";
-import RegistrationPage from "./pages/RegistrationPage";
-import { LoadingPage } from "@/components/LoadingPage";
-import { AuthProvider } from "./contexts/AuthContext";
-import { Header } from "./components/Header";
-import LoginPage from "./pages/LoginPage";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import { useState, useEffect } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Toaster } from '@/components/ui/toaster';
+import { Toaster as Sonner } from '@/components/ui/sonner';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { Navbar } from './components/Navbar';
+import { LoadingPage } from '@/components/LoadingPage';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+
+// Pages
+import Index from './pages/Index';
+import NotFound from './pages/NotFound';
+import MapPage from './pages/MapPage';
+import LoginPage from './pages/LoginPage';
+import ProfilePage from './pages/ProfilePage';
 
 const queryClient = new QueryClient();
 
-const App = () => {
+// Component to handle authentication state changes
+const AuthStateHandler = ({ children }: { children: React.ReactNode }) => {
+  const { loading } = useAuth();
+
+  if (loading) {
+    return <LoadingPage message="Loading your session..." />;
+  }
+
+  return <>{children}</>;
+};
+
+function AppContent() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const hasLoaded = sessionStorage.getItem("hasLoaded");
+    const hasLoaded = sessionStorage.getItem('hasLoaded');
 
     if (hasLoaded) {
       setIsLoading(false);
     } else {
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         setIsLoading(false);
-        sessionStorage.setItem("hasLoaded", "true");
-      }, 3000);
+        sessionStorage.setItem('hasLoaded', 'true');
+      }, 1000);
+
+      return () => clearTimeout(timer);
     }
   }, []);
 
   if (isLoading) {
-    return <LoadingPage message="Preparing the festival experience..." />;
+    return <LoadingPage message="Loading..." />;
   }
 
   return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <main className="container mx-auto px-4 py-8">
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/map" element={<MapPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<LoginPage isSignUp />} />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </main>
+      <Toaster />
+      <Sonner />
+    </div>
+  );
+}
+
+function App() {
+  return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Header />
-            <main className="min-h-[calc(100vh-4rem)]">
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/map" element={<MapPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/signup" element={<LoginPage />} />
-                <Route 
-                  path="/register" 
-                  element={
-                    <ProtectedRoute>
-                      <RegistrationPage />
-                    </ProtectedRoute>
-                  } 
-                />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </main>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <TooltipProvider>
+            <AuthStateHandler>
+              <AppContent />
+            </AuthStateHandler>
+          </TooltipProvider>
+        </AuthProvider>
+      </BrowserRouter>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;
