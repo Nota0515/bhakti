@@ -8,6 +8,7 @@ import { Separator } from './ui/separator';
 import { Plus, Minus, ShoppingCart, X, MapPin, Truck } from 'lucide-react';
 import { GanpatiBappa } from './GanpatiBappa';
 import { UpiQrModal } from './UpiQrModal';
+import { supabase } from '@/lib/supabase';
 
 interface PrasadItem {
   id: string;
@@ -147,17 +148,52 @@ export const PrasadOrderModal: React.FC<PrasadOrderModalProps> = ({
     setShowUpiModal(true);
   };
 
-  const handlePaymentComplete = () => {
-    // Mock payment completion
-    setCart([]);
-    setIncludeDelivery(false);
-    setShowUpiModal(false);
-    setCurrentOrder(null);
-    onClose();
-    
-    // Show success message
-    if (onPaymentComplete) {
-      onPaymentComplete();
+  const handlePaymentComplete = async () => {
+    try {
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        console.error('Error getting user:', userError?.message || 'No user logged in');
+        return;
+      }
+      
+      console.log('Updating prasad order status for user:', user.id);
+      
+      // Update the has_ordered_prasad column for the current user
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ 
+          has_ordered_prasad: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id)
+        .select();
+
+      console.log('Update result:', { data, error });
+
+      if (error) {
+        console.error('Error updating prasad order status:', error);
+        // You might want to show an error toast here
+        return;
+      }
+
+      // Reset the UI state
+      setCart([]);
+      setIncludeDelivery(false);
+      setShowUpiModal(false);
+      setCurrentOrder(null);
+      
+      // Show success message
+      if (onPaymentComplete) {
+        onPaymentComplete();
+      }
+      
+      // Close the modal
+      onClose();
+    } catch (error) {
+      console.error('Error in payment completion:', error);
+      // You might want to show an error toast here
     }
   };
 

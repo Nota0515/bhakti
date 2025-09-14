@@ -15,6 +15,7 @@ import NotFound from './pages/NotFound';
 import MapPage from './pages/MapPage';
 import LoginPage from './pages/LoginPage';
 import ProfilePage from './pages/ProfilePage';
+import MandalRegistration from './pages/MandalRegistration';
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,7 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
+          <Route path="/register" element={<MandalRegistration />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

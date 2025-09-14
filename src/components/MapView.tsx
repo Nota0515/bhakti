@@ -187,7 +187,7 @@ export const MapView: React.FC<MapViewProps> = ({ onBack }) => {
           .update({ 
             has_ordered_prasad: true,
             phone: formData.phone,
-            address: formData.deliveryAddress 
+            address: formData.deliveryAddress
           })
           .eq('id', profile.id);
 

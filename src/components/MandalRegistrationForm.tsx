@@ -21,6 +21,7 @@ import {
   Upload
 } from 'lucide-react';
 import { GanpatiBappa } from './GanpatiBappa';
+import { supabase } from '@/lib/supabase';
 
 interface MandalRegistrationFormProps {
   onBack: () => void;
@@ -165,11 +166,25 @@ export const MandalRegistrationForm: React.FC<MandalRegistrationFormProps> = ({
     setIsSubmitting(true);
     
     try {
-      // Save registration data to local storage
-      const mandals = JSON.parse(localStorage.getItem('mandals') || '[]');
-      localStorage.setItem('mandals', JSON.stringify([...mandals, formData]));
+      // Save registration data to Supabase
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({
+          ...formData,
+          is_mandal: true,
+          updated_at: new Date().toISOString()
+        })
+        .eq('email', formData.email)
+        .select();
       
-      // Try to send email notification, but don't let it block registration
+      if (error) {
+        console.error('Error saving mandal data:', error);
+        // Fallback to localStorage if Supabase fails
+        const mandals = JSON.parse(localStorage.getItem('mandals') || '[]');
+        localStorage.setItem('mandals', JSON.stringify([...mandals, formData]));
+      }
+      
+      // Send email notification
       try {
         const response = await fetch('/api/send-email', {
           method: 'POST',
